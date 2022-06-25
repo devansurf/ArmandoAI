@@ -5,7 +5,7 @@ from modules import stalk as s
 
 
 # def main():
-TOKEN = "OTg5OTU5NzY3NTg3OTc5Mjk0.GgM2oL.AIX9AEZIqZvlabha0nUj3u10CVG9aD09ILANcs"
+TOKEN = ""
 bot = commands.Bot(command_prefix='$')
 
 
