@@ -1,11 +1,12 @@
+import os
 import discord
 from discord.ext import commands
 from modules import stalk as s
+from dotenv import load_dotenv
 
 
-
-# def main():
-TOKEN = ""
+load_dotenv()
+TOKEN = os.getenv('BOT_TOKEN')
 bot = commands.Bot(command_prefix='$')
 
 
