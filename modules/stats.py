@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-import time
+import time, discord
 from modules import anim as a
 from modules import read_channel as r
 from modules import utils as u
@@ -17,7 +17,7 @@ def validateMessage(message,username):
         return False
 
     #Check if the message is valid and ignores commands
-    blacklist = ['$', '/', '!']
+    blacklist = ['$', '/', '!', '-']
     for e in blacklist:
         if message["content"].startswith(e):
             return False
@@ -25,7 +25,6 @@ def validateMessage(message,username):
 
 #collect any relevant data found within the messages, returns a formatted string
 def findData(messages, username):
-    output = "{}'s Armando Beans Stats:\n-Messages sent: {}\n-Top 10 Most used words: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}\n-First message sent: '{}' on {}"
     #get the count
     mNum = len(messages)
     #find the top 10 favorite words
@@ -39,17 +38,47 @@ def findData(messages, username):
             else:
                 wordList[word] = 1
     #sort the wordList
+    preposition_list = u.fetch_preposition_words()
     most_used_words = []
+    top_ten = ""
     for k, v in sorted(wordList.items(), key=lambda item: item[1], reverse = True):
-        most_used_words.append([k,v])
-  
+        if not k in preposition_list:
+            most_used_words.append([k,v])
+
+    top_ten = u.words_to_string(most_used_words, 10)
+
     #first message sent with date
     first_message = messages[len(messages)-1]
     fMes = first_message["content"]
     fDate = first_message["date"]
+    fMes = fMes + "\n\nsent on: " + fDate
 
-    output = output.format(username,mNum,most_used_words[0][0],most_used_words[1][0], most_used_words[2][0],most_used_words[3][0], most_used_words[4][0],most_used_words[5][0],most_used_words[6][0],most_used_words[7][0], most_used_words[8][0],most_used_words[9][0],fMes,fDate)
-    return output
+    #indecent words said
+    indecent_words = {}
+    indecent_word_count = 0
+    most_used_indecent_words = []
+    profaned_list = u.fetch_profanity_words()
+    for k, v in wordList.items():
+        if k in profaned_list:
+            indecent_words[k] = v
+            indecent_word_count += v
+
+    for k, v in sorted(indecent_words.items(), key=lambda item: item[1], reverse = True):
+        most_used_indecent_words.append([k,v])
+
+    indecent_sentence = str(indecent_word_count) + "\n Among them, the top 5 most used are:\n" 
+
+    embed = discord.embed=discord.Embed(
+        title= username + "'s Armando Bean Stats:",
+        color=discord.Color.green()
+    )
+    embed.add_field(name="Top 10 most used words:", value=top_ten, inline=True)
+    embed.add_field(name="Top 5 most used bad words:", value=u.words_to_string(most_used_indecent_words, 5), inline=True)
+    embed.add_field(name="Bad words typed:", value=str(indecent_word_count), inline=True)
+    embed.add_field(name="First message sent:", value=fMes, inline=True)
+    embed.add_field(name="Messages sent:", value=mNum, inline=True)
+   
+    return embed
 
 async def stats(ctx, username):
     if username.startswith("<"):
@@ -67,6 +96,6 @@ async def stats(ctx, username):
             filteredMessages.append(message)
             count += 1
     
-    await channel.send(findData(filteredMessages, username))
+    await channel.send(embed = findData(filteredMessages, username))
     loading_anim.cancel()
    

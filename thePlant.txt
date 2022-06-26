@@ -5,14 +5,11 @@ Expected Commands:
         uses a trained neural network to rate a img containing a face through 1-10, 10 being the prettiest.
 
 2nd Tier commands (pringleLords):
-    $stalk <User>
+    $stats <User>
         returns all public data relating to an individual in the server, scanning through the chat logs.
 
     $complete <String> <User>
         Uses an available neural network in order to complete the sentence.
-
-    $favorite <User>
-        Fetches a Users most used words, excluding 
 
 1st Tier commands (admin):
     $train
