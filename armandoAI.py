@@ -1,7 +1,7 @@
 import os
 import discord
 from discord.ext import commands
-from modules import stalk as s
+from modules import stats as s
 from modules import read_channel as r
 from dotenv import load_dotenv
 
@@ -11,8 +11,8 @@ TOKEN = os.getenv('BOT_TOKEN')
 bot = commands.Bot(command_prefix='$')
 
 @bot.command()
-async def stalk(ctx, username):
-    await s.stalk(ctx, username)
+async def stats(ctx, *, username):
+    await s.stats(ctx, username)
 
 @bot.command()
 async def read(ctx):

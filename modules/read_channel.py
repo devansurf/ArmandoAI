@@ -1,3 +1,4 @@
+import asyncio
 import pickle
 from modules import anim as a
 
@@ -21,11 +22,13 @@ def loadData(ctx):
 async def read_channel(ctx):
     messages = []
     channel = ctx.channel
-    await a.loading(ctx, "bruh")
+    loading_anim = asyncio.create_task(a.loading(ctx, "Reading Channel Text")) 
     async for message in channel.history(limit = None):
         #validate that the message meets some parameters     
         #extract the important details of the message to store
-        messages.append({"name" : message.author.name, "content" : message.content})
-        print(message.content)
+        messages.append({"name" : message.author.name, "content" : message.content, "date":  message.created_at.strftime("%d %B, %Y")})
+    print("Cancelling loading")
+    loading_anim.cancel()
+
     storeData(messages)
     
