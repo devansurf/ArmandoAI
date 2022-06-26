@@ -25,6 +25,11 @@ def validateMessage(message,username):
 
 #collect any relevant data found within the messages, returns a formatted string
 def findData(messages, username):
+    
+    embed = discord.Embed(
+        title= username + "'s Armando Bean Stats:",
+        color=discord.Color.green()
+    )
     #get the count
     mNum = len(messages)
     #find the top 10 favorite words
@@ -37,6 +42,8 @@ def findData(messages, username):
                 wordList[word] += 1
             else:
                 wordList[word] = 1
+    if len(wordList) == 0:
+        return embed
     #sort the wordList
     preposition_list = u.fetch_preposition_words()
     most_used_words = []
@@ -65,13 +72,6 @@ def findData(messages, username):
 
     for k, v in sorted(indecent_words.items(), key=lambda item: item[1], reverse = True):
         most_used_indecent_words.append([k,v])
-
-    indecent_sentence = str(indecent_word_count) + "\n Among them, the top 5 most used are:\n" 
-
-    embed = discord.embed=discord.Embed(
-        title= username + "'s Armando Bean Stats:",
-        color=discord.Color.green()
-    )
     embed.add_field(name="Top 10 most used words:", value=top_ten, inline=True)
     embed.add_field(name="Top 5 most used bad words:", value=u.words_to_string(most_used_indecent_words, 5), inline=True)
     embed.add_field(name="Bad words typed:", value=str(indecent_word_count), inline=True)

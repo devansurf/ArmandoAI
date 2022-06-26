@@ -5,6 +5,8 @@ def id_from_mention(mentionStr):
     return mentionStr.rstrip(">")
 
 def words_to_string(l, amount):
+    if len(l) <= 0:
+        return "NONE"
     dict_string = ""
     while len(l) < amount:
         amount -= 1
