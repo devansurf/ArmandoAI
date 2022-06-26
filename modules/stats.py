@@ -84,7 +84,6 @@ async def stats(ctx, username):
     if username.startswith("<"):
         user = await ctx.bot.fetch_user(u.id_from_mention(username))
         username = user.name
-    print(username)
     channel = ctx.channel
     messages = r.loadData(ctx)
     filteredMessages = []
