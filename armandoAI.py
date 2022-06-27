@@ -2,7 +2,8 @@ import os
 import discord
 from discord.ext import commands
 from modules import stats as s
-from modules import read_channel as r
+from modules import read_channels as r
+from modules import tf
 from dotenv import load_dotenv
 
 #Setup
@@ -11,12 +12,21 @@ TOKEN = os.getenv('BOT_TOKEN')
 bot = commands.Bot(command_prefix='$')
 
 @bot.command()
+async def train(ctx, epochSize):
+    if ctx.author.guild_permissions.administrator:
+        await tf.trainAI(ctx, epochSize)
+
+@bot.command()
+async def predict(ctx, *, inp):
+    await tf.predict(ctx, inp)
+
+@bot.command()
 async def stats(ctx, *, username):
     await s.stats(ctx, username)
 
 @bot.command()
 async def read(ctx):
-    await r.read_channel(ctx)
+    await r.read_channels(ctx)
 
 @bot.event
 async def on_ready():

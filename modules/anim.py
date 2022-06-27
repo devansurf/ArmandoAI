@@ -30,5 +30,4 @@ async def loading(ctx, txt):
             await asyncio.sleep(abs(anim_tick) - deltaTime)
             frame += 1
     except asyncio.CancelledError:
-        print("exception executed")
         await message.edit(content = "Task: '" + txt + "' completed with an execution time of: " + str(time.time()-globalTime) + " seconds.")

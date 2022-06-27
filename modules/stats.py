@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime
 import time, discord
 from modules import anim as a
-from modules import read_channel as r
+from modules import read_channels as r
 from modules import utils as u
 
 def validateMessage(message,username):
@@ -12,15 +12,15 @@ def validateMessage(message,username):
     if message["name"].lower() != username.lower():
         return False
 
-    #check if content is empty
-    if not message["content"]:
-        return False
+    # #check if content is empty
+    # if not message["content"]:
+    #     return False
 
-    #Check if the message is valid and ignores commands
-    blacklist = ['$', '/', '!', '-']
-    for e in blacklist:
-        if message["content"].startswith(e):
-            return False
+    # #Check if the message is valid and ignores commands
+    # blacklist = ['$', '/', '!', '-']
+    # for e in blacklist:
+    #     if message["content"].startswith(e):
+    #         return False
     return valid
 
 #collect any relevant data found within the messages, returns a formatted string

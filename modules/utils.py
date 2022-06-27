@@ -1,4 +1,28 @@
 import urllib
+import re
+
+blacklist = ['$', '/', '!', '-', '```', 'http']
+
+def isSpam(message):
+    if not message.content:
+        return True
+    if message.author.bot:
+        return True
+    for e in blacklist:
+        if message.content.startswith(e):
+            return True
+
+    return False
+
+
+
+async def mention_from_id(ctx, id):
+    id = id_from_mention(id)
+    try:
+        user = await ctx.bot.fetch_user(id)
+        return "@" + user.name
+    except:
+        return ""
 
 def id_from_mention(mentionStr):
     mentionStr = mentionStr.lstrip("<@")
@@ -14,6 +38,18 @@ def words_to_string(l, amount):
     for i in range(amount):
         dict_string = dict_string  + l[i][0] + ", "
     return dict_string 
+
+async def formatText(ctx, txt):
+    #extract any mentions and convert them to a readable form
+    active = True
+    while active:
+        result = re.search(r"\<[^<>]*\>", txt)
+        if result:
+            replace_name = await mention_from_id(ctx, result.group())
+            txt = txt.replace(result.group(), replace_name)
+        else:
+            active = False
+    return txt
 
 def fetch(url):
     file = urllib.request.urlopen(url)

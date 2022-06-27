@@ -1,3 +1,4 @@
 .env
 cache
 modules/__pycache__
+modules/training_checkpoints
