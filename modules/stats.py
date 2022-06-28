@@ -12,10 +12,10 @@ def validateMessage(message,username):
     return valid
 
 #collect any relevant data found within the messages, returns a formatted string
-def findData(messages, username):
+def findData(ctx, messages, username):
     
     embed = discord.Embed(
-        title= username + "'s Armando Bean Stats:",
+        title= username + "'s " + ctx.guild.name +" Stats:",
         color=discord.Color.green()
     )
     #get the count
@@ -83,5 +83,5 @@ async def stats(ctx, username):
             filteredMessages.append(message)
             count += 1
     
-    await channel.send(embed = findData(filteredMessages, username))
+    await channel.send(embed = findData(ctx,filteredMessages, username))
    

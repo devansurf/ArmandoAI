@@ -6,13 +6,13 @@ from modules import stats as s
 from modules import read_channels as r
 from modules import anim as a
 from modules import tf
+from modules import help as h
 from dotenv import load_dotenv
 
 #Setup
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 bot = commands.Bot(command_prefix='$')
-
 @bot.command()
 async def train(ctx, epochSize):
     if ctx.author.guild_permissions.administrator:
@@ -23,11 +23,11 @@ async def train(ctx, epochSize):
         await m.edit(content = "Training Completed in: " + str((time.time()-deltaTime)/60.0) + " minutes.")
 
 @bot.command()
-async def predict(ctx, *, inp):
+async def predict(ctx, *, text):
     deltaTime = time.time()
     msg = "Calculating Prediction..."
     m = await a.roboMessage(ctx, msg)
-    await tf.predict(ctx, inp)
+    await tf.predict(ctx, text)
     await m.edit(content = "Prediction Completed in: " + str(time.time()-deltaTime) + " seconds.")
 
 @bot.command()
