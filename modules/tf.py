@@ -2,28 +2,9 @@ import asyncio
 import tensorflow as tf
 import os
 import numpy as np
-from modules import anim as a
 from modules import utils as u
-# Read, then decode for py2 compat.
-text = open('channel_history.txt', 'rb').read().decode(encoding='utf-8')
-vocab = sorted(set(text))
-# Creating a mapping from unique characters to indices
-char2idx = {u: i for i, u in enumerate(vocab)}
-idx2char = np.array(vocab)
 
-BATCH_SIZE = 64
-VOCAB_SIZE = len(vocab)  # vocab is number of unique characters
-EMBEDDING_DIM = 256
-RNN_UNITS = 1024
-
-# Buffer size to shuffle the dataset
-# (TF data is designed to work with possibly infinite sequences,
-# so it doesn't attempt to shuffle the entire sequence in memory. Instead,
-# it maintains a buffer in which it shuffles elements).
-BUFFER_SIZE = 10000
-
-checkpoint_dir = './modules/training_checkpoints'
-
+DIRECTORY = './history/{channel}.txt'
 
 def loss(labels, logits):
     return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
@@ -41,7 +22,27 @@ def build_model(vocab_size, embedding_dim, rnn_units, batch_size):
     return model
         
 async def trainAI(ctx, epochSize):
-    loading_anim = asyncio.create_task(a.loading(ctx, "Training AI at " + epochSize + "Epochs")) 
+    # Read, then decode for py2 compat.
+ 
+    text = open(DIRECTORY.format(channel = ctx.guild.id), 'rb').read().decode(encoding='utf-8')
+    vocab = sorted(set(text))
+    # Creating a mapping from unique characters to indices
+    char2idx = {u: i for i, u in enumerate(vocab)}
+    idx2char = np.array(vocab)
+
+    BATCH_SIZE = 64
+    VOCAB_SIZE = len(vocab)  # vocab is number of unique characters
+    EMBEDDING_DIM = 256
+    RNN_UNITS = 1024
+
+    # Buffer size to shuffle the dataset
+    # (TF data is designed to work with possibly infinite sequences,
+    # so it doesn't attempt to shuffle the entire sequence in memory. Instead,
+    # it maintains a buffer in which it shuffles elements).
+    BUFFER_SIZE = 10000
+
+    checkpoint_dir = './checkpoints/{channel}'.format(channel = ctx.guild.id)
+
     epochSize = int(epochSize)
     def text_to_int(text):
         return np.array([char2idx[c] for c in text])
@@ -97,64 +98,76 @@ async def trainAI(ctx, epochSize):
         save_weights_only=True)
 
     model.fit(data, epochs=epochSize, callbacks=[checkpoint_callback])
-    loading_anim.cancel()
 
     # checkpoint_num = 10
     # model.load_weights(tf.train.load_checkpoint("./training_checkpoints/ckpt_" + str(checkpoint_num)))
     # model.build(tf.TensorShape([1, None]))
 
 
-def generate_text(model, start_string):
-    # Evaluation step (generating text using the learned model)
-
-    # Number of characters to generate
-    num_generate = 800
-
-    # Converting our start string to numbers (vectorizing)
-    input_eval = [char2idx[s] for s in start_string]
-    input_eval = tf.expand_dims(input_eval, 0)
-
-    # Empty string to store our results
-    text_generated = []
-
-    # Low temperatures results in more predictable text.
-    # Higher temperatures results in more surprising text.
-    # Experiment to find the best setting.
-    temperature = 0.9
-
-    # Here batch size == 1
-    model.reset_states()
-    for i in range(num_generate):
-        predictions = model(input_eval)
-        # remove the batch dimension
-
-        predictions = tf.squeeze(predictions, 0)
-
-        # using a categorical distribution to predict the character returned by the model
-        predictions = predictions / temperature
-        predicted_id = tf.random.categorical(
-            predictions, num_samples=1)[-1, 0].numpy()
-
-        # We pass the predicted character as the next input to the model
-        # along with the previous hidden state
-        input_eval = tf.expand_dims([predicted_id], 0)
-
-        text_generated.append(idx2char[predicted_id])
-
-    return (start_string + ''.join(text_generated))
-
 
 async def predict(ctx, inp):
-    loading_anim = asyncio.create_task(a.loading(ctx, "Computing prediction")) 
-    model = build_model(VOCAB_SIZE, EMBEDDING_DIM, RNN_UNITS, batch_size=1)
-    model.load_weights(tf.train.latest_checkpoint(checkpoint_dir))
-    model.build(tf.TensorShape([1, None]))
+    text = open(DIRECTORY.format(channel = ctx.guild.id), 'rb').read().decode(encoding='utf-8')
+    vocab = sorted(set(text))
+    # Creating a mapping from unique characters to indices
+    char2idx = {u: i for i, u in enumerate(vocab)}
+    idx2char = np.array(vocab)
+
+    VOCAB_SIZE = len(vocab)  # vocab is number of unique characters
+    EMBEDDING_DIM = 256
+    RNN_UNITS = 1024
+    checkpoint_dir = './checkpoints/{channel}'.format(channel = ctx.guild.id)
+
+
+    def generate_text(model, start_string):
+        # Evaluation step (generating text using the learned model)
+
+        # Number of characters to generate
+        num_generate = 800
+
+
+        # Converting our start string to numbers (vectorizing)
+        input_eval = [char2idx[s] for s in start_string]
+        input_eval = tf.expand_dims(input_eval, 0)
+
+        # Empty string to store our results
+        text_generated = []
+
+        # Low temperatures results in more predictable text.
+        # Higher temperatures results in more surprising text.
+        # Experiment to find the best setting.
+        temperature = 0.9
+
+        # Here batch size == 1
+        model.reset_states()
+        for i in range(num_generate):
+            predictions = model(input_eval)
+            # remove the batch dimension
+
+            predictions = tf.squeeze(predictions, 0)
+
+            # using a categorical distribution to predict the character returned by the model
+            predictions = predictions / temperature
+            predicted_id = tf.random.categorical(
+                predictions, num_samples=1)[-1, 0].numpy()
+
+            # We pass the predicted character as the next input to the model
+            # along with the previous hidden state
+            input_eval = tf.expand_dims([predicted_id], 0)
+
+            text_generated.append(idx2char[predicted_id])
+
+        return (start_string + ''.join(text_generated))
 
     channel = ctx.channel
+
+    model = build_model(VOCAB_SIZE, EMBEDDING_DIM, RNN_UNITS, batch_size=1)
+    model.load_weights(tf.train.latest_checkpoint(checkpoint_dir)).expect_partial()
+    model.build(tf.TensorShape([1, None]))
+
+    
     #format the input to better suit discord chat
     formatted_inp = ctx.author.name + "\n" + inp
     print(formatted_inp)
     generated_text = await u.formatText(ctx, generate_text(model, formatted_inp))
-    loading_anim.cancel()
     await channel.send("```" + ctx.author.name + "\n" + generated_text + "```")
     

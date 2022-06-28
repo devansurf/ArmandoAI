@@ -1,19 +1,22 @@
+import os
 import asyncio
 import pickle
-from modules import anim as a
 from modules import utils as u
+CACHE = './cache'
+HISTORY = './history'
+CACHE_DIRECTORY = './cache/{channel}.txt'
+HISTORY_DIRECTORY = './history/{channel}.txt'
 
-MCACHE_DIRECTORY = 'cache/messageCache'
-WRITE_DIRECTORY = 'channel_history.txt'
 
-def storeData(messages):
-    mCache = open(MCACHE_DIRECTORY, 'wb')
+
+def storeData(ctx, messages):
+    mCache = open(CACHE_DIRECTORY.format(channel = ctx.guild.id), 'wb')
     pickle.dump(messages,mCache)
     mCache.close()
 
 def loadData(ctx):
     messages = []
-    mCache = open(MCACHE_DIRECTORY, 'rb')
+    mCache = open(CACHE_DIRECTORY.format(channel = ctx.guild.id), 'rb')
     messages = pickle.load(mCache)
     if len(messages) == 0:
        read_channels(ctx)
@@ -22,24 +25,24 @@ def loadData(ctx):
     mCache.close()
     return messages
 
-def writeData(messages):
-    file = open(WRITE_DIRECTORY, 'w')
+def writeData(ctx, messages):
+    file = open(HISTORY_DIRECTORY.format(channel = ctx.guild.id), 'w')
     for message in messages:
         file.write("\n" + message["name"] + "\n" + message["content"]+"\n")
     file.close()
 
 async def read_channels(ctx):
+    os.makedirs(CACHE, exist_ok=True)
+    os.makedirs(HISTORY, exist_ok=True)
     messages = []
     channels = ctx.guild.text_channels
-    loading_anim = asyncio.create_task(a.loading(ctx, "Reading Channel Text")) 
     for channel in channels:
         async for message in channel.history(limit = None):
             #validate that the message meets some parameters     
             #extract the important details of the message to store
             if not u.isSpam(message):
                 messages.append({"name" : message.author.name, "content" : message.content, "date":  message.created_at.strftime("%d %B, %Y")})
-    loading_anim.cancel()
 
-    storeData(messages)
-    writeData(messages)
+    storeData(ctx,messages)
+    writeData(ctx,messages)
     

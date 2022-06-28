@@ -1,7 +1,4 @@
-import asyncio
-from datetime import datetime
-import time, discord
-from modules import anim as a
+import discord
 from modules import read_channels as r
 from modules import utils as u
 
@@ -12,15 +9,6 @@ def validateMessage(message,username):
     if message["name"].lower() != username.lower():
         return False
 
-    # #check if content is empty
-    # if not message["content"]:
-    #     return False
-
-    # #Check if the message is valid and ignores commands
-    # blacklist = ['$', '/', '!', '-']
-    # for e in blacklist:
-    #     if message["content"].startswith(e):
-    #         return False
     return valid
 
 #collect any relevant data found within the messages, returns a formatted string
@@ -88,7 +76,7 @@ async def stats(ctx, username):
     messages = r.loadData(ctx)
     filteredMessages = []
     count = 0
-    loading_anim = asyncio.create_task(a.loading(ctx, "Computing stats")) 
+    
     #loop through all the channel's messages
     for message in messages:
         if validateMessage(message,username):
@@ -96,5 +84,4 @@ async def stats(ctx, username):
             count += 1
     
     await channel.send(embed = findData(filteredMessages, username))
-    loading_anim.cancel()
    

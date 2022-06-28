@@ -1,5 +1,6 @@
 .env
+.vscode
 cache
 modules/__pycache__
-modules/training_checkpoints
-channel_history.txt
+checkpoints
+history
