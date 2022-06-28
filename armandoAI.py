@@ -6,7 +6,6 @@ from modules import stats as s
 from modules import read_channels as r
 from modules import anim as a
 from modules import tf
-from modules import help as h
 from dotenv import load_dotenv
 
 #Setup
