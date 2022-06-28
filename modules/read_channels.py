@@ -35,7 +35,10 @@ async def read_channels(ctx):
     os.makedirs(CACHE, exist_ok=True)
     os.makedirs(HISTORY, exist_ok=True)
     messages = []
+    #sort text channels by date
     channels = ctx.guild.text_channels
+    channels.sort(key=lambda x: x.created_at.date(), reverse=True)
+
     for channel in channels:
         async for message in channel.history(limit = None):
             #validate that the message meets some parameters     
